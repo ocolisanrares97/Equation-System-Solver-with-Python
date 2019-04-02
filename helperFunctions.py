@@ -157,7 +157,7 @@ def initializePopulation( population_size , no_of_variables ):
     population = []
     for i in range(0,population_size):
 
-        solution = np.random.uniform(-20,20,no_of_variables)
+        solution = np.random.uniform(-100,100,no_of_variables)
 
         for j in range(0,len(solution)):
             solution[j] = solution[j]
@@ -465,7 +465,7 @@ def mutate(population_after_crossover, mutation_rate):
         # print("i ",i)
         RandNR = random.randrange(0, len(population_after_crossover))
         # print(RandNR)
-        population_after_crossover[RandNR][1] = random.uniform(-10, 10)
+        population_after_crossover[RandNR][1] = random.uniform(-10,10)
         # solution_to_be_mutated = selected_chromosomes[RandNR]
 
         # selected_chromosomes[RandNR] = mutateSol(solution_to_be_mutated)
@@ -483,6 +483,8 @@ Function to improve the fitness of a solution by adding/substracting some value 
 '''
 
 def imporve_solution(sol):
+
+    precision = 0.003
     fitness = calcFitnessAbsValue(coefficients,freeTerms,sol)
 
     new_sol = []
@@ -495,13 +497,13 @@ def imporve_solution(sol):
         for j in range(0, len(coefficients)):
             auxSolution.append(sol[j])
 
-        auxSolution[i] = auxSolution[i] + 0.001
+        auxSolution[i] = auxSolution[i] + precision
         tempFitness = calcFitnessAbsValue(coefficients,freeTerms,auxSolution)
 
         if tempFitness < fitness:
             new_sol[i] = auxSolution[i]
         else:
-            auxSolution[i] = auxSolution[i] - 0.002
+            auxSolution[i] = auxSolution[i] - 2*(precision)
             tempFitness = calcFitnessAbsValue(coefficients,freeTerms,auxSolution)
 
             if tempFitness < fitness:
@@ -510,6 +512,20 @@ def imporve_solution(sol):
     for i in range(0,len(new_sol)):
         sol[i] = new_sol[i]
     newFit = calcFitnessAbsValue(coefficients,freeTerms,sol)
-    #if newFit < fitness:
-    #    print("OK")
+
+    if newFit >= fitness:
+        #print("HERE")
+
+        for i in range(0,len(coefficients)-1):
+            RandNR = random.random()
+            if RandNR < 0.5:
+                new_sol[i] = new_sol[i] + precision
+            else:
+                new_sol[i] = new_sol[i] - precision
+        for i in range(0, len(new_sol)):
+            sol[i] = new_sol[i]
+
     #print("{0} --> {1}".format(fitness,newFit))
+
+
+
