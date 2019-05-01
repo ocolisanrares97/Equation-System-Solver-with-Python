@@ -1,78 +1,14 @@
 import numpy as np
 import random
-#function that returns a list of strings, each one representing an equation
+from parsing_functions import *
 
-''' PARSING STAGE '''
-
-#read contents of the file
-def getFileContent(filename):
-    # equations[] will contatin the raw equations from the file as strings
-    equations = []
-
-    with open(filename) as file:
-        equations = file.readlines()
-
-    # remove \n from the strings
-    equations = [x.strip() for x in equations]
-    return equations
-
-'''
-
-getCoefficients extracts the coefficients, free terms and variables from the strings
-representing the equations
-
- '''
-
-def getCoefficientsAndFreeTerms(equations):
-    # leftHandSide and rightHandSide of the equations
-    leftHandSides = []
-    rightHandSides = []
-
-    # we split the entire equation based on the "=" sign into lefths and righths
-
-    for eq in equations:
-        a = eq.split("=")
-        leftHandSides.append(a[0])
-        rightHandSides.append(a[1])
-
-    #eliminate white space from the strings representing the free terms
-    for i in range(0,len(rightHandSides)):
-        rightHandSides[i] = rightHandSides[i].strip(" ")
-
-    #in the Lhs we split the coefficients from the variables
-    for i in range(0, len(leftHandSides)):
-        leftHandSides[i] = leftHandSides[i].replace("*", " ").split(" ")
-        del leftHandSides[i][-1] #eleminates white space char from the list of strings
-
-    #we extract each coeffiecient of the variables, we convert it to float and add it to the
-    #matrix
-    coeff = []
-    coefficients = []
-    for i in range(0, len(leftHandSides)):
-        eq = leftHandSides[i]
-        coeff = []
-        for i in range(0, len(eq), 2):
-            singleCoeff = eq[i]
-            coeff.append(float(singleCoeff))
-
-        coefficients.append(coeff)
-
-
-    #get free terms
-    freeTerms = []
-    for i in range(0,len(rightHandSides)):
-        freeTerms.append(float(rightHandSides[i]))
-
-    return coefficients,freeTerms
-
-equations = getFileContent("sistem.txt")
-
-coefficients, freeTerms = getCoefficientsAndFreeTerms(equations)
-
-population_size = 8
-no_of_variables = len(coefficients[0])
-
-
+#global_filename = "sistem.txt"
+# equations = getFileContent(global_filename)
+#
+# coefficients, freeTerms = getCoefficientsAndFreeTerms(equations)
+#
+# population_size = 8
+# no_of_variables = len(coefficients[0])
 
 
 '''
@@ -157,7 +93,7 @@ def initializePopulation( population_size , no_of_variables ):
     population = []
     for i in range(0,population_size):
 
-        solution = np.random.uniform(-100,100,no_of_variables)
+        solution = np.random.uniform(-11,11,no_of_variables)
 
         for j in range(0,len(solution)):
             solution[j] = solution[j]
@@ -315,7 +251,7 @@ def distanceToLine(x1,y1,x2,y2,x3,y3):
 Find best solution from current population
 '''
 
-def find_best_solution(population):
+def find_best_solution(population, coefficients, freeTerms):
     fitnessList = []
     for pop in population:
         fitnessList.append(calcFitnessAbsValue(coefficients, freeTerms, pop))
@@ -405,7 +341,7 @@ def roulette_wheel_selection(fitnessList,next_generation):
 Crossover function
 '''
 
-def crossover(selected_chromosomes, crossover_rate):
+def crossover(selected_chromosomes, crossover_rate, no_of_variables,coefficients,freeTerms):
     selected_for_crossover = []
 
     for i in range(0, len(selected_chromosomes)):
@@ -453,7 +389,7 @@ def crossover(selected_chromosomes, crossover_rate):
 Mutation function
 '''
 
-def mutate(population_after_crossover, mutation_rate):
+def mutate(population_after_crossover, mutation_rate, population_size, no_of_variables):
     total_gen = population_size * no_of_variables
     nr_of_chromosomes_mutated = round(mutation_rate * total_gen)
     # print(nr_of_chromosomes_mutated)
@@ -479,13 +415,13 @@ def mutate(population_after_crossover, mutation_rate):
 
 
 '''
-Function to improve the fitness of a solution by adding/substracting some value < 1.0
+Function to improve the fitness of a solution by adding/substracting a small value
 '''
 
-def imporve_solution(sol):
+def imporve_solution(sol,coefficients, freeTerms):
 
-    precision = 0.003
-    fitness = calcFitnessAbsValue(coefficients,freeTerms,sol)
+    precision = 0.003 #we use this as the value that will be added/substracted to fine tune the solution
+    fitness = calcFitnessAbsValue(coefficients,freeTerms,sol) #calc the current fitness of our population
 
     new_sol = []
     for i in range(0,len(coefficients)):
@@ -497,12 +433,14 @@ def imporve_solution(sol):
         for j in range(0, len(coefficients)):
             auxSolution.append(sol[j])
 
-        auxSolution[i] = auxSolution[i] + precision
+        auxSolution[i] = auxSolution[i] + precision #add the precision to each variable and check
+                                                    #the fitness of the pop after
         tempFitness = calcFitnessAbsValue(coefficients,freeTerms,auxSolution)
 
-        if tempFitness < fitness:
+        if tempFitness < fitness:          #if the new fitness is better we leave it like this
             new_sol[i] = auxSolution[i]
-        else:
+        else:                               #otherwise we substract from the variable the precision
+                                            #and we check again if the new fitness is better
             auxSolution[i] = auxSolution[i] - 2*(precision)
             tempFitness = calcFitnessAbsValue(coefficients,freeTerms,auxSolution)
 
@@ -513,17 +451,24 @@ def imporve_solution(sol):
         sol[i] = new_sol[i]
     newFit = calcFitnessAbsValue(coefficients,freeTerms,sol)
 
+    #because there are cases when the solution won't improve (the fitness will be larger)
+    # we approach a method that uses a coin-flip principle in order to variate the values of
+    # our variables
     if newFit >= fitness:
-        #print("HERE")
-
+        #if we reached an impass, we generate a random number between 0 and 1 for each variable of
+        # our system
         for i in range(0,len(coefficients)-1):
             RandNR = random.random()
-            if RandNR < 0.5:
+
+            if RandNR < 0.5: #if the random nr is smaller than 0.5 we add the "precision" to the current
+                            # variable
                 new_sol[i] = new_sol[i] + precision
-            else:
+            else:           #otherwise we substract the precision
                 new_sol[i] = new_sol[i] - precision
         for i in range(0, len(new_sol)):
             sol[i] = new_sol[i]
+    #by using this coin flip principle of adding or substractin the precision, I found out that the
+    #algorithm exists the potential loop when it gets stuck to the same fitness value and stops improving
 
     #print("{0} --> {1}".format(fitness,newFit))
 
