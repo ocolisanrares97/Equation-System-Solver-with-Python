@@ -163,7 +163,7 @@ def DW(pop, index, fitList1, fitList2):
 
 ''' 
 
--mating_selection using tournament criterion and knee point selection
+-mating_selection using tournament criterion
 
 '''
 
@@ -263,14 +263,6 @@ def find_best_solution(population, coefficients, freeTerms):
             bestSol = population[i]
 
     return bestSol
-'''
-
-Finding_knee_points
-Finds the knee points of the population and returns a set containing them
-
-'''
-
-
 
 
 
@@ -418,9 +410,9 @@ def mutate(population_after_crossover, mutation_rate, population_size, no_of_var
 Function to improve the fitness of a solution by adding/substracting a small value
 '''
 
-def imporve_solution(sol,coefficients, freeTerms):
+def imporve_solution(sol,coefficients, freeTerms,prcecisionUsed):
 
-    precision = 0.003 #we use this as the value that will be added/substracted to fine tune the solution
+    precision = prcecisionUsed #0.003 #we use this as the value that will be added/substracted to fine tune the solution
     fitness = calcFitnessAbsValue(coefficients,freeTerms,sol) #calc the current fitness of our population
 
     new_sol = []
