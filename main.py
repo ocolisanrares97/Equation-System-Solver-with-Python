@@ -4,14 +4,14 @@ from generator import *
 
 
 
-def boot(filename):
+def boot(filename,pop_size,crossRate,mutationRate,fitTreshold,prec):
 
     equations = getFileContent(filename)
     coefficients, freeTerms = getCoefficientsAndFreeTerms(equations)
 
-    population_size = 1000
-    crossover_rate = 0.50 #25% chance to use current member for crossover
-    mutation_rate = 0.2 #10% chance to mutate
+    population_size = pop_size #1000
+    crossover_rate =  crossRate  #0.50 #25% chance to use current member for crossover
+    mutation_rate =   mutationRate#0.2 #10% chance to mutate
     no_of_variables = len(coefficients[0])
 
     population = initializePopulation(population_size , no_of_variables)
@@ -21,7 +21,7 @@ def boot(filename):
     # gen = Generator()
     # gen.print_sistem()
     bestFit = 3000
-    while bestFit > 0.3:
+    while bestFit > fitTreshold:
 
         previous_generation = next_generation.copy()
 
@@ -72,7 +72,7 @@ def boot(filename):
 
         best_sol = find_best_solution(next_generation, coefficients,freeTerms)
         for i in range(0,2000):
-            imporve_solution(best_sol,coefficients,freeTerms)
+            imporve_solution(best_sol,coefficients,freeTerms,prec)
         final_bestFitness = bestFit
         print(bestFit)
         #print(find_best_solution(next_generation))
