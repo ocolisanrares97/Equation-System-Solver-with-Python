@@ -9,25 +9,51 @@ def startComputation():
     str = filename.strip()
 
 
-    final_solution,fit = boot(str)
+    try:
+        crossRate = float(crossoverRateTextField.get("1.0", END))
 
-    resultsTextField.delete("1.0",END)
-    sol = "x"
-    egal = " = "
-    backs = "\n"
 
-    resultsTextField.insert(END, "Fitness values of the solution is: ")
-    resultsTextField.insert(END, fit)
-    resultsTextField.insert(END, backs)
-    for i in range(0,len(final_solution)):
+        mutationRate = float(mutationRateTextField.get("1.0", END))
 
-        resultsTextField.insert(END, sol)
-        resultsTextField.insert(END,i+1)
-        resultsTextField.insert(END, egal)
-        resultsTextField.insert(END, final_solution[i])
+        fitness = float(fitnessTextField.get("1.0", END))
+
+        popSize = int(populationSizeTextField.get("1.0", END))
+
+        precision = float(precisionTextField.get("1.0", END))
+
+    except:
+        resultsTextField.delete("1.0", END)
+        resultsTextField.insert(END, "Please make sure that you completed the parameter fields.")
+        return
+
+
+
+    try:
+        final_solution,fit = boot(str,popSize,crossRate,mutationRate,fitness,precision)
+
+        resultsTextField.delete("1.0",END)
+        sol = "x"
+        egal = " = "
+        backs = "\n"
+
+        resultsTextField.insert(END, "Fitness values of the solution is: ")
+        resultsTextField.insert(END, fit)
         resultsTextField.insert(END, backs)
+        for i in range(0,len(final_solution)):
 
-    del final_solution[:]
+            resultsTextField.insert(END, sol)
+            resultsTextField.insert(END,i+1)
+            resultsTextField.insert(END, egal)
+            resultsTextField.insert(END, final_solution[i])
+            resultsTextField.insert(END, backs)
+
+        del final_solution[:]
+    except:
+        resultsTextField.delete("1.0",END)
+        resultsTextField.insert(END,"Error. Something went wrong when proccesing the solution"
+                                    "  \nMake sure that you have succesfully read the file."
+                                    "\nCheck if you have filled the paramaters fields")
+
 
 def displaySystem():
     str = ""
@@ -50,7 +76,6 @@ def displaySystem():
 
 
 
-
 #++++++++++++++++++++++++++++   GUI LAYOUT   +++++++++++++++++++++++++++
 
 top = Tk()
@@ -69,12 +94,14 @@ inputTextField = Text(top, height=1, bd=3,width=60)
 resultsTextField = Text(top, height=20, width=60)
 showSystemTextField = Text(top,height=20,width =60)
 
+
+
 #____ENTRIES_____
-crossoverRateTextField = Entry(top,bd = 2,width=10)
-mutationRateTextField = Entry(top,bd = 2,width=10)
-precisionTextField = Entry(top, bd = 2,width=10)
-populationSizeTextField = Entry(top, bd = 2,width=10)
-fitnessTextField = Entry(top, bd = 2,width=10)
+crossoverRateTextField = Text(top,bd = 2,width=10 ,height = 1)
+mutationRateTextField = Text(top,bd = 2,width=10,height = 1)
+precisionTextField = Text(top,bd = 2,width=10,height = 1)
+populationSizeTextField = Text(top, bd = 2,width=10,height = 1)
+fitnessTextField = Text(top,bd = 2,width=10,height = 1)
 
 #_____BUTTONS____
 readFileButton = Button(top, text="Read File", command= displaySystem)
@@ -108,10 +135,6 @@ startButton.grid(row=2,column = 4,padx = 20)
 
 resultsTextField.grid(row=1,column = 5, rowspan=4)
 Label(top,text="Solutions").grid(row=5,column=5,pady=5)
-
-# S.config(command=resultsTextField.yview)
-# resultsTextField.config(yscrollcommand=S.set)
-
 
 
 
