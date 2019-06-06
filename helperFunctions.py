@@ -382,21 +382,14 @@ Mutation function
 '''
 
 def mutate(population_after_crossover, mutation_rate, population_size, no_of_variables):
+
     total_gen = population_size * no_of_variables
     nr_of_chromosomes_mutated = round(mutation_rate * total_gen)
-    # print(nr_of_chromosomes_mutated)
 
-    # print("_________________________________________________")
-
-    # print(selected_chromosomes)
     for i in range(0, nr_of_chromosomes_mutated):
-        # print("i ",i)
-        RandNR = random.randrange(0, len(population_after_crossover))
-        # print(RandNR)
-        population_after_crossover[RandNR][1] = random.uniform(-10,10)
-        # solution_to_be_mutated = selected_chromosomes[RandNR]
 
-        # selected_chromosomes[RandNR] = mutateSol(solution_to_be_mutated)
+        RandNR = random.randrange(0, len(population_after_crossover))
+        population_after_crossover[RandNR][1] = random.uniform(-10,10)
 
 
     return population_after_crossover
